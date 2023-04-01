@@ -4,7 +4,8 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-image: linear-gradient(to bottom, #2e026d, #15162c);
+  background-image: linear-gradient(to bottom, #a47fda, #252a98);
+  color:beige;
 }
 
 .container {
