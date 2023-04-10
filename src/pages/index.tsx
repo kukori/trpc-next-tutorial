@@ -1,13 +1,28 @@
 import styles from "./index.module.css";
 import { type NextPage } from "next";
+import  Image  from "next/image";
 import Head from "next/head";
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 
+const CreatePostsWizard = () => {
+  const { user } = useUser();
+
+  if(!user) return null;
+
+  return <div>
+    <img src={user.profileImageUrl} width={50} height={50} />
+    <input placeholder="Type something" />
+  </div>
+}
+
 const Home: NextPage = () => {
   const user = useUser();
+  
+  const { data, isLoading } = api.posts.getAll.useQuery();
+  console.log(data);
 
-  const { data } = api.posts.getAll.useQuery();
+  if(isLoading) return <div>Loading...</div>;
 
   return (
     <>
@@ -19,7 +34,7 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <div>
           {!user.isSignedIn && <SignInButton />}
-          {!!user.isSignedIn && <SignOutButton />}
+          {!!user.isSignedIn && (<div><CreatePostsWizard/><SignOutButton/></div>)}
         </div>
         <div>
           {data?.map((post) => (<div key={post.id}>{post.content}</div>))}
