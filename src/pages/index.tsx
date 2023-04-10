@@ -1,9 +1,8 @@
 import styles from "./index.module.css";
 import { type NextPage } from "next";
-import  Image  from "next/image";
 import Head from "next/head";
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
-import { api } from "~/utils/api";
+import { RouterOutputs, api } from "~/utils/api";
 
 const CreatePostsWizard = () => {
   const { user } = useUser();
@@ -14,6 +13,18 @@ const CreatePostsWizard = () => {
     <img src={user.profileImageUrl} width={50} height={50} />
     <input placeholder="Type something" />
   </div>
+}
+
+type PostWithUser = RouterOutputs["posts"]["getAll"][number];
+
+const PostView = (props: PostWithUser) => {
+  const {author, content} = props;
+  return (
+    <div>
+      <img src={author.profileImageUrl} width={50} height={50}/>
+      <div>{content}</div>
+    </div>
+  );
 }
 
 const Home: NextPage = () => {
@@ -37,7 +48,7 @@ const Home: NextPage = () => {
           {!!user.isSignedIn && (<div><CreatePostsWizard/><SignOutButton/></div>)}
         </div>
         <div>
-          {data?.map((post) => (<div key={post.id}>{post.content}</div>))}
+          {data?.map((post) => (<PostView key={post.id} {...post} />))}
         </div>
       </main>
     </>
