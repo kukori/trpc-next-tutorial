@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styles from "./index.module.css";
 import { type NextPage } from "next";
 import Head from "next/head";
@@ -13,12 +14,29 @@ dayjs.extend(relativeTime);
 
 const CreatePostsWizard = () => {
   const { user } = useUser();
+  const [input, setInput] = useState<string>("");
+  const ctx = api.useContext();
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: async () => {
+      setInput("");
+      await ctx.posts.getAll.invalidate();
+    },
+  });
 
   if(!user) return null;
 
   return (<div>
     <Image className="profileImage" src={user.profileImageUrl} width={50} height={50} alt="me"/>
-    <input placeholder="Type something" />
+    <input 
+      placeholder="Type something"
+      type="text"
+      value={input}
+      onChange={(event) => {
+        setInput(event.target.value);
+      }}
+      disabled={isPosting}
+    />
+    <button onClick={() => mutate({content: input})}>Post</button>
   </div>)
 };
 
