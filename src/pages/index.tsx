@@ -9,6 +9,7 @@ import type { RouterOutputs } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { LoadingSpinner } from "~/components/loading";
+import { toast } from "react-hot-toast";
 
 dayjs.extend(relativeTime);
 
@@ -21,6 +22,15 @@ const CreatePostsWizard = () => {
       setInput("");
       await ctx.posts.getAll.invalidate();
     },
+    onError: (error) => {
+      const errorMessage = error.data?.zodError?.fieldErrors.content;
+
+      if(errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Failed to save post! Please try again later.");
+      }
+    }
   });
 
   if(!user) return null;
@@ -36,7 +46,7 @@ const CreatePostsWizard = () => {
       }}
       disabled={isPosting}
     />
-    <button onClick={() => mutate({content: input})}>Post</button>
+    <button onClick={() => mutate({content: input})} disabled={isPosting}>Post</button>
   </div>)
 };
 
