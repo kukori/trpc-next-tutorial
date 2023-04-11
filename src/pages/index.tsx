@@ -1,11 +1,13 @@
 import styles from "./index.module.css";
 import { type NextPage } from "next";
 import Head from "next/head";
+import Image from "next/image";
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import type { RouterOutputs } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { LoadingSpinner } from "~/components/loading";
 
 dayjs.extend(relativeTime);
 
@@ -14,35 +16,49 @@ const CreatePostsWizard = () => {
 
   if(!user) return null;
 
-  return <div>
-    <img src={user.profileImageUrl} width={50} height={50} />
+  return (<div>
+    <Image className="profileImage" src={user.profileImageUrl} width={50} height={50} alt="me"/>
     <input placeholder="Type something" />
-  </div>
-}
+  </div>)
+};
 
 type PostWithUser = RouterOutputs["posts"]["getAll"][number];
 
 const PostView = (props: PostWithUser) => {
   const {author, content, createdAt} = props;
   return (
-    <div>
-      <img src={author.profileImageUrl} width={50} height={50}/>
-      <div>
+    <div className="post">
+      <Image className="profileImage" src={author.profileImageUrl} width={50} height={50} alt="me"/>
+      <div className="postData">
         <div>{content}</div>
+        <span>-</span>
         <div>{author.username}</div>
+        <span>-</span>
         <div>{dayjs(createdAt).fromNow()}</div>
       </div>
     </div>
   );
+};
+
+const Feed = () => {
+  const { data, isLoading } = api.posts.getAll.useQuery();
+
+  if(isLoading) return <LoadingSpinner/>;
+  
+  return (
+    <div>
+      {data?.map((post) => (<PostView key={post.id} {...post} />))}
+    </div>
+  )
 }
 
 const Home: NextPage = () => {
-  const user = useUser();
+  const {isLoaded, isSignedIn, } = useUser();
   
-  const { data, isLoading } = api.posts.getAll.useQuery();
-  console.log(data);
-
-  if(isLoading) return <div>Loading...</div>;
+  // just to start fetching early the Feed component will use the cached data
+  api.posts.getAll.useQuery();
+  
+  if(!isLoaded) return <LoadingSpinner/>;
 
   return (
     <>
@@ -53,12 +69,10 @@ const Home: NextPage = () => {
       </Head>
       <main className={styles.main}>
         <div>
-          {!user.isSignedIn && <SignInButton />}
-          {!!user.isSignedIn && (<div><CreatePostsWizard/><SignOutButton/></div>)}
+          {!isSignedIn && <SignInButton />}
+          {!!isSignedIn && (<div><CreatePostsWizard/><SignOutButton/></div>)}
         </div>
-        <div>
-          {data?.map((post) => (<PostView key={post.id} {...post} />))}
-        </div>
+        <Feed/>
       </main>
     </>
   );
