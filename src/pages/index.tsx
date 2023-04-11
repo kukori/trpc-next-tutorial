@@ -2,7 +2,12 @@ import styles from "./index.module.css";
 import { type NextPage } from "next";
 import Head from "next/head";
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
-import { RouterOutputs, api } from "~/utils/api";
+import { api } from "~/utils/api";
+import type { RouterOutputs } from "~/utils/api";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 const CreatePostsWizard = () => {
   const { user } = useUser();
@@ -18,11 +23,15 @@ const CreatePostsWizard = () => {
 type PostWithUser = RouterOutputs["posts"]["getAll"][number];
 
 const PostView = (props: PostWithUser) => {
-  const {author, content} = props;
+  const {author, content, createdAt} = props;
   return (
     <div>
       <img src={author.profileImageUrl} width={50} height={50}/>
-      <div>{content}</div>
+      <div>
+        <div>{content}</div>
+        <div>{author.username}</div>
+        <div>{dayjs(createdAt).fromNow()}</div>
+      </div>
     </div>
   );
 }
