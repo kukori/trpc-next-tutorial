@@ -43,7 +43,7 @@ const Feed = () => {
 }
 
 const SinglePostPage: NextPage = () => {
-  const {isLoaded, isSignedIn, } = useUser();
+  const {isLoaded } = useUser();
   
   // just to start fetching early the Feed component will use the cached data
   api.posts.getAll.useQuery();
